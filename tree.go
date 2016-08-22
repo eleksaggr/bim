@@ -1,5 +1,7 @@
 package bim
 
+import "crypto/sha1"
+
 type treeData struct {
 	Filename string
 	Mode     uint8
@@ -7,8 +9,13 @@ type treeData struct {
 }
 
 type Tree struct {
+	id    []byte
 	nodes []*Tree
 	Data  *treeData
+}
+
+func NewTree() *Tree {
+
 }
 
 func (tree *Tree) Insert(filename string, mode uint8, blob []byte) {
@@ -32,4 +39,27 @@ func (tree *Tree) Remove(t *Tree) {
 			tree.nodes = append(tree.nodes[:i], tree.nodes[i+1:]...)
 		}
 	}
+}
+
+func (tree Tree) Hash() []byte {
+	hash := make([]byte, sha1.Size)
+	hasher := sha1.New()
+	for _, node := range tree.nodes {
+		if node.nodes == nil {
+			// Node is a blob.
+			hash = hasher.Sum(node.Data.Blob)
+		} else {
+			// Node is a tree.
+			hash = hasher.Sum(node.Hash())
+		}
+	}
+	return hash
+}
+
+func (tree *Tree) updateID() {
+	tree.id = tree.Hash()
+}
+
+func (tree Tree) ID() []byte {
+	return tree.id
 }
