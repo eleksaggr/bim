@@ -14,8 +14,9 @@ type Tree struct {
 	Data  *treeData
 }
 
-func NewTree() *Tree {
-
+func NewTree() (tree *Tree) {
+	tree.updateID()
+	return tree
 }
 
 func (tree *Tree) Insert(filename string, mode uint8, blob []byte) {
