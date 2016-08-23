@@ -1,27 +1,98 @@
 package bim
 
-import "crypto/sha1"
+import (
+	"crypto/sha1"
+	"errors"
+	"os"
+)
 
-type treeMetadata struct {
+// type treeMetadata struct {
+// 	Filename string
+// 	Mode     os.FileMode
+// 	Blob     Blob
+// }
+//
+// type Tree struct {
+// 	nodes []*Tree
+// 	Data  *treeMetadata
+// }
+//
+// func NewTree() *Tree {
+//
+// }
+//
+// func (tree Tree) Insert(filename string, mode os.FileMode, blob Blob) (t *Tree) {
+//
+// }
+//
+// func (tree Tree) Checksum() []byte {
+// 	checksum := make([]byte, sha1.Size)
+// 	h := sha1.New()
+// 	for _, node := range tree.nodes {
+// 		if node.nodes == nil {
+// 			checksum = h.Sum(node.Data.Blob)
+// 		} else {
+// 			checksum = h.Sum(node.Checksum())
+// 		}
+// 	}
+// 	return checksum
+// }
+
+var errNilTree = errors.New("Cannot operate on nil-tree.")
+
+type treeMeta struct {
 	Filename string
-	Mode     uint8
-	Blob     Blob
+	Mode     os.FileMode
 }
 
 type Tree struct {
-	nodes []*Tree
-	Data  *treeMetadata
+	id       [20]byte
+	children []*Tree
+	blob     Blob
+	meta     *treeMeta
 }
 
-func (tree Tree) Checksum() []byte {
-	checksum := make([]byte, sha1.Size)
+func (tree Tree) Insert(t *Tree) (newTree *Tree, err error) {
+	if t == nil {
+		return nil, errNilTree
+	}
+	// Copy old tree meta data to new tree.
+	newTree = &Tree{
+		blob: tree.blob,
+		meta: tree.meta,
+	}
+	// Append the tree to be inserted to the new tree.
+	newTree.children = append(newTree.children, t)
+	newTree.updateID()
+	return newTree, nil
+}
+
+func (tree Tree) InsertBlob(filename string, mode os.FileMode, blob Blob) (*Tree, error) {
+	return tree.Insert(&Tree{
+		children: nil,
+		blob:     blob,
+		meta: &treeMeta{
+			Filename: filename,
+			Mode:     mode,
+		},
+	})
+}
+
+func (tree *Tree) updateID() {
 	h := sha1.New()
-	for _, node := range tree.nodes {
-		if node.nodes == nil {
-			checksum = h.Sum(node.Data.Blob)
+	for _, child := range tree.children {
+		if child.isTree() {
+			h.Write(child.id[:])
 		} else {
-			checksum = h.Sum(node.Checksum())
+			checksum := child.blob.Checksum()
+			h.Write(checksum[:])
 		}
 	}
-	return checksum
+}
+
+func (tree Tree) isTree() bool {
+	if tree.children == nil || len(tree.children) == 0 {
+		return false
+	}
+	return true
 }
