@@ -6,8 +6,12 @@ import "crypto/sha1"
 type Blob []byte
 
 // Checksum calculates the SHA-1 checksum for the blob.
-func (blob Blob) Checksum() [20]byte {
+func (blob Blob) Checksum() [sha1.Size]byte {
 	h := sha1.New()
 	h.Write([]byte(blob))
-	return sha1.Sum(nil)
+	temp := h.Sum(nil)
+
+	checksum := [20]byte{}
+	copy(checksum[:], temp[0:sha1.Size])
+	return checksum
 }
