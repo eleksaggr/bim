@@ -47,11 +47,11 @@ func (tree Tree) InsertBlob(filename string, mode os.FileMode, blob Blob) *Tree 
 	return tree.Insert(NewTree(tree.Filename(), tree.Mode(), tree.blob, nil))
 }
 
-func (tree Tree) Remove(id [sha1.Size]byte) (t *Tree) {
+func (tree Tree) Remove(filename string) (t *Tree) {
 	t = NewTree(tree.Filename(), tree.Mode(), tree.blob, tree.children)
-	for i, child := range tree.children {
-		if child.id == id {
-			t.children = append(t.children[:i], t.children[:i+1]...)
+	for i, child := range t.children {
+		if child.Filename() == filename {
+			t.children = append(t.children[:i], t.children[i+1:]...)
 			break
 		}
 	}
