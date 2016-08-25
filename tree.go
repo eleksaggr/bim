@@ -13,6 +13,7 @@ type treeMeta struct {
 	Mode     os.FileMode
 }
 
+// Tree is a structure that helps organize the files as blobs.
 type Tree struct {
 	id       [sha1.Size]byte
 	children []*Tree
@@ -20,6 +21,7 @@ type Tree struct {
 	meta     *treeMeta
 }
 
+// NewTree creates a new tree with the given details.
 func NewTree(filename string, mode os.FileMode, blob Blob, children []*Tree) *Tree {
 	return &Tree{
 		meta: &treeMeta{
@@ -31,10 +33,12 @@ func NewTree(filename string, mode os.FileMode, blob Blob, children []*Tree) *Tr
 	}
 }
 
+// NewEmptyTree creates a new tree with no children.
 func NewEmptyTree(filename string, mode os.FileMode) *Tree {
 	return NewTree(filename, mode, nil, nil)
 }
 
+// Insert inserts a tree as a child.
 func (tree Tree) Insert(t *Tree) (newTree *Tree) {
 	newTree = NewTree(tree.Filename(), tree.Mode(), tree.blob, tree.children)
 	// Append the tree to be inserted to the new tree.
@@ -43,10 +47,12 @@ func (tree Tree) Insert(t *Tree) (newTree *Tree) {
 	return newTree
 }
 
+// InsertBlob inserts a blob as a child.
 func (tree Tree) InsertBlob(filename string, mode os.FileMode, blob Blob) *Tree {
 	return tree.Insert(NewTree(filename, mode, tree.blob, nil))
 }
 
+// Remove removes the child with the name given as filename.
 func (tree Tree) Remove(filename string) (t *Tree) {
 	// Disallow removing the tree itself.
 	if filename == tree.Filename() {
@@ -84,10 +90,12 @@ func (tree Tree) isTree() bool {
 	return true
 }
 
+// Filename returns the filename of this tree.
 func (tree Tree) Filename() string {
 	return tree.meta.Filename
 }
 
+// Mode returns the mode of this tree.
 func (tree Tree) Mode() os.FileMode {
 	return tree.meta.Mode
 }
