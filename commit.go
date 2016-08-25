@@ -35,11 +35,11 @@ func NewCommit(author string, email string, tree *Tree, parents []*Commit) (comm
 		commit.parents = parents
 	}
 
-	commit.updateID()
+	commit.generateID()
 	return commit, nil
 }
 
-func (commit *Commit) updateID() {
+func (commit *Commit) generateID() {
 	h := sha1.New()
 	h.Write([]byte(commit.author))
 	h.Write([]byte(commit.email))
