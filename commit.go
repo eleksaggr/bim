@@ -11,7 +11,7 @@ var errCommitNoTree = errors.New("Cannot create commit without tree")
 // Commit is a structure that holds a tree and meta information.
 type Commit struct {
 	id      [sha1.Size]byte
-	tree    *Tree
+	tree    *FSTree
 	parents []*Commit
 
 	author string
@@ -20,7 +20,7 @@ type Commit struct {
 }
 
 // NewCommit creates a new commit with the provided meta information, the provided tree, and parents as its parent commits.
-func NewCommit(author string, email string, tree *Tree, parents []*Commit) (commit *Commit, err error) {
+func NewCommit(author string, email string, tree *FSTree, parents []*Commit) (commit *Commit, err error) {
 	if tree == nil {
 		return nil, errCommitNoTree
 	}
@@ -45,7 +45,8 @@ func (commit *Commit) generateID() {
 	h := sha1.New()
 	h.Write([]byte(commit.author))
 	h.Write([]byte(commit.email))
-	h.Write([]byte(commit.tree.id[:]))
+	treeChecksum := commit.tree.Checksum()
+	h.Write(treeChecksum[:])
 	temp := h.Sum(nil)
 
 	checksum := [sha1.Size]byte{}
