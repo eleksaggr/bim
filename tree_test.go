@@ -5,10 +5,15 @@ import (
 	"testing"
 )
 
+const (
+	testTreeName = "parentTree"
+	testBlobName = "blob"
+)
+
 func TestTreeInsert(t *testing.T) {
-	tree := NewEmptyTree("parent", os.ModePerm)
-	tree = tree.InsertBlob("child", os.ModePerm, Blob("Child"))
-	if tree.id == Blob("Child").Checksum() {
+	tree := NewEmptyTree(testTreeName, os.ModePerm)
+	tree = tree.InsertBlob(testBlobName, os.ModePerm, Blob("I am a blob."))
+	if tree.id == Blob("I am a blob.").Checksum() {
 		t.Errorf("Checksum generated the same hash for blob and tree.")
 	}
 	if len(tree.children) != 1 {
@@ -17,9 +22,9 @@ func TestTreeInsert(t *testing.T) {
 }
 
 func TestTreeRemove(t *testing.T) {
-	tree := NewEmptyTree("parent", os.ModePerm)
-	tree = tree.InsertBlob("child", os.ModePerm, Blob("Child"))
-	tree = tree.Remove(tree.children[0].id)
+	tree := NewEmptyTree(testTreeName, os.ModePerm)
+	tree = tree.InsertBlob(testBlobName, os.ModePerm, Blob("I am a blob."))
+	tree = tree.Remove(testBlobName)
 
 	if len(tree.children) != 0 {
 		t.Errorf("Did not remove blob correctly.")

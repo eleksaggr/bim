@@ -44,10 +44,15 @@ func (tree Tree) Insert(t *Tree) (newTree *Tree) {
 }
 
 func (tree Tree) InsertBlob(filename string, mode os.FileMode, blob Blob) *Tree {
-	return tree.Insert(NewTree(tree.Filename(), tree.Mode(), tree.blob, nil))
+	return tree.Insert(NewTree(filename, mode, tree.blob, nil))
 }
 
 func (tree Tree) Remove(filename string) (t *Tree) {
+	// Disallow removing the tree itself.
+	if filename == tree.Filename() {
+		return
+	}
+
 	t = NewTree(tree.Filename(), tree.Mode(), tree.blob, tree.children)
 	for i, child := range t.children {
 		if child.Filename() == filename {
