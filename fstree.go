@@ -56,7 +56,7 @@ func (tree *FSTree) clone() *FSTree {
 
 // InsertFile inserts a file into the tree. If a file with the same name exists,
 // this will replace it.
-func (tree *FSTree) InsertFile(name string, perm os.FileMode, blob Blob) {
+func (tree *FSTree) InsertFile(name string, perm os.FileMode, blob Blob) *FSTree {
 	// Try to remove the file from the tree.
 	// If the file does not exist, nothing will happen.
 	tree.Remove(name)
@@ -67,6 +67,7 @@ func (tree *FSTree) InsertFile(name string, perm os.FileMode, blob Blob) {
 	file := newFile(name, perm, blob)
 	tree.children = append(tree.children, file)
 	file.parent = tree
+	return file
 }
 
 // InsertDir inserts a directory into the tree. If a directory with the same name exists,
