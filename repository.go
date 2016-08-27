@@ -8,6 +8,13 @@ import (
 	"path/filepath"
 )
 
+const (
+	RepoDir     = ".repo"
+	BlobDir     = "blob"
+	StagingArea = "stage"
+	CommitDir   = "commit"
+)
+
 // Repository asdas FIXME
 type Repository struct {
 	name    string
@@ -19,7 +26,7 @@ type Repository struct {
 func LoadRepo(absoluteDir string) (repo *Repository, err error) {
 	repo = &Repository{
 		name: filepath.Base(absoluteDir),
-		path: absoluteDir + "/" + repoDir,
+		path: absoluteDir + "/" + RepoDir,
 	}
 
 	// Change directory into repository directory.
@@ -27,7 +34,7 @@ func LoadRepo(absoluteDir string) (repo *Repository, err error) {
 		return nil, err
 	}
 
-	f, err := os.OpenFile(stagingArea, os.O_RDWR, 0644)
+	f, err := os.OpenFile(StagingArea, os.O_RDWR, 0644)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +56,7 @@ func (repo *Repository) SaveBlob(blob Blob) (err error) {
 	err = repo.resetWorkingDir()
 
 	// Change into blob directory.
-	err = os.Chdir(blobDir)
+	err = os.Chdir(BlobDir)
 	if err != nil {
 		return err
 	}
@@ -69,7 +76,7 @@ func (repo *Repository) LoadBlob(id Checksum) (blob Blob, err error) {
 		return nil, err
 	}
 
-	err = os.Chdir(blobDir)
+	err = os.Chdir(BlobDir)
 	if err != nil {
 		return nil, err
 	}
