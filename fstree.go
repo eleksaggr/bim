@@ -7,16 +7,18 @@ import (
 	"sync"
 )
 
+var dirPlaceholderChecksum Checksum = [20]byte{}
+
 // FSTree is a structure that manages the file system as a tree.
 type FSTree struct {
 	parent   *FSTree
 	children []*FSTree
 	mutex    sync.RWMutex
 
-	name  string
-	perm  os.FileMode
-	blob  Blob
-	isDir bool
+	name   string
+	perm   os.FileMode
+	blobID Checksum
+	isDir  bool
 }
 
 var errFileNotFound = errors.New("File not found")
@@ -27,36 +29,25 @@ func NewTree(name string, perm os.FileMode) (tree *FSTree) {
 	return &FSTree{
 		name:     name,
 		perm:     perm,
-		blob:     nil,
+		blobID:   dirPlaceholderChecksum,
 		isDir:    true,
 		children: nil,
 	}
 }
 
-func newFile(name string, perm os.FileMode, blob Blob) (file *FSTree) {
+func newFile(name string, perm os.FileMode, blobID Checksum) (file *FSTree) {
 	return &FSTree{
 		name:     name,
 		perm:     perm,
-		blob:     blob,
+		blobID:   blobID,
 		isDir:    false,
 		children: nil,
 	}
 }
 
-func (tree *FSTree) clone() *FSTree {
-	return &FSTree{
-		name:     tree.Name(),
-		perm:     tree.Perm(),
-		blob:     tree.Blob(),
-		isDir:    tree.IsDir(),
-		children: tree.children,
-		parent:   tree.parent,
-	}
-}
-
 // InsertFile inserts a file into the tree. If a file with the same name exists,
 // this will replace it.
-func (tree *FSTree) InsertFile(name string, perm os.FileMode, blob Blob) *FSTree {
+func (tree *FSTree) InsertFile(name string, perm os.FileMode, blobID Checksum) *FSTree {
 	// Try to remove the file from the tree.
 	// If the file does not exist, nothing will happen.
 	tree.Remove(name)
@@ -64,7 +55,7 @@ func (tree *FSTree) InsertFile(name string, perm os.FileMode, blob Blob) *FSTree
 	tree.mutex.Lock()
 	defer tree.mutex.Unlock()
 
-	file := newFile(name, perm, blob)
+	file := newFile(name, perm, blobID)
 	tree.children = append(tree.children, file)
 	file.parent = tree
 	return file
@@ -144,15 +135,15 @@ func (tree *FSTree) IsDir() bool {
 	return tree.isDir
 }
 
-// Blob returns the blob held by this FSTree.
-func (tree *FSTree) Blob() Blob {
-	return tree.blob
+// BlobID returns the id of the blob held by this FSTree.
+func (tree *FSTree) BlobID() Checksum {
+	return tree.blobID
 }
 
 // Checksum returns the unique checksum for this tree.
 func (tree *FSTree) Checksum() Checksum {
 	if tree.isDir == false {
-		return tree.blob.Checksum()
+		return tree.blobID
 	}
 
 	h := sha1.New()

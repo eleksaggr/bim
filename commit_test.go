@@ -16,7 +16,7 @@ const (
 func TestNewCommit(t *testing.T) {
 	// Create an empty tree.
 	tree := NewTree(testDirectory, testMode)
-	tree.InsertFile(testFilename, testMode, Blob("This is a test file."))
+	tree.InsertFile(testFilename, testMode, Blob("This is a test file.").Checksum())
 
 	commit, err := NewCommit(testAuthor, testEmail, tree, nil)
 	if err != nil {

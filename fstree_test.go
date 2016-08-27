@@ -17,7 +17,7 @@ func TestNewTree(t *testing.T) {
 	if tree.Perm() != testTreePerm {
 		t.Error("Did not set tree permissions correctly.")
 	}
-	if tree.Blob() != nil {
+	if tree.BlobID() != dirPlaceholderChecksum {
 		t.Error("Directory tree may not contain blob.")
 	}
 	if tree.IsDir() == false {
@@ -40,7 +40,7 @@ func TestInsertFile(t *testing.T) {
 	testFileBlob := Blob("I'm a test file.")
 
 	tree := NewTree(testTreeName, testTreePerm)
-	tree.InsertFile(testFileName, testFilePerm, testFileBlob)
+	tree.InsertFile(testFileName, testFilePerm, testFileBlob.Checksum())
 
 	if len(tree.children) != 1 {
 		t.Error("Did not insert file correctly.")
@@ -81,12 +81,12 @@ func TestFind(t *testing.T) {
 	testTreePerm := os.ModePerm
 
 	tree := NewTree(testTreeName, testTreePerm)
-	tree.InsertFile("Layer 1 File", os.ModePerm, Blob("I'm in layer 1!"))
+	tree.InsertFile("Layer 1 File", os.ModePerm, Blob("I'm in layer 1!").Checksum())
 	dir := tree.InsertDir("Directory1", os.ModePerm)
-	findme := dir.InsertFile("FindMe", os.ModePerm, Blob("Plz find me. thx <3"))
+	findme := dir.InsertFile("FindMe", os.ModePerm, Blob("Plz find me. thx <3").Checksum())
 	dir2 := tree.InsertDir("Directory2", os.ModePerm)
 	dir3 := dir2.InsertDir("Directory3", os.ModePerm)
-	dir3.InsertFile("DontFindMe", os.ModePerm, Blob("Don't find me!"))
+	dir3.InsertFile("DontFindMe", os.ModePerm, Blob("Don't find me!").Checksum())
 
 	file, err := tree.Find("FindMe")
 	if err != nil {
