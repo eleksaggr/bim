@@ -14,9 +14,10 @@ type Commit struct {
 	tree    *FSTree
 	parents []*Commit
 
-	author string
-	email  string
-	time   time.Time
+	author  string
+	email   string
+	message string
+	time    time.Time
 }
 
 // NewCommit creates a new commit with the provided meta information, the provided tree, and parents as its parent commits.
